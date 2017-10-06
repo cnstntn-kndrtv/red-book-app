@@ -411,11 +411,9 @@ class Stack {
 var cards = new Stack(document.getElementById('stack'), {}, db);
 
 var infoScreen = document.querySelector('#info');
-var menuCircle = document.querySelector('#menu-circle');
 var helpButton = document.querySelector('#show-info-button');
 helpButton.onclick = () => {
     infoScreen.setAttribute('class', 'open');
-    menuCircle.setAttribute('class', 'open');
 }
 var closeInfoButton = document.querySelector('#close-info-button')
 closeInfoButton.onclick = () => {
