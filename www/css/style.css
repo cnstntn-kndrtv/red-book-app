@@ -18,6 +18,8 @@ body {
     font-size: 12px;
     line-height: 1.42857143;
     position: relative;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .menu-top {
