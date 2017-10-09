@@ -72,6 +72,7 @@ body {
   width: 100vw;
   height: 100vh;
   padding: 10%;
+  padding-bottom: 20vh;
   font-size: 1.85em;
   text-indent: 20px;
   color: #333;
