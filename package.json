@@ -12,8 +12,6 @@
     "dependencies": {
         "cordova-android": "^6.2.3",
         "cordova-plugin-whitelist": "^1.3.2",
-        "ldf-client": "^2.0.5",
-        "n3": "^0.11.2",
         "normalize.css": "^7.0.0"
     },
     "cordova": {

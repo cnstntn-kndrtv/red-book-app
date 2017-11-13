@@ -1,6 +1,3 @@
-var ldf = require('ldf-client');
-var N3 = require('n3');
-
 class MyEventEmitter {
     constructor() {
         this.events = {};
@@ -102,7 +99,8 @@ class Query extends MyEventEmitter {
 }
 
 function getLiteral(l) {
-    return (l) ? N3.Util.getLiteralValue(l) : null;
+    let match = /^"([^]*)"/.exec(l);
+    return (match) ? match[1] : null;
 }
 
 function getPosTag(tag) {
@@ -110,6 +108,3 @@ function getPosTag(tag) {
     if(tag) posTag = tag.replace('http://www.lexinfo.net/ontology/2.0/lexinfo#', '');
     return posTag;
 }
-
-
-module.exports.Query = Query;

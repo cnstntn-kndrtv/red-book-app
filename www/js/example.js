@@ -1,13 +1,20 @@
-let {Query} = require('./Query');
-let dictionary = new Query();
+let exampleButton = document.querySelector('#exampleButton');
+exampleButton.onclick = () => example()
 
-dictionary.get('прозорливый');
+let getTermsListButton = document.querySelector('#getTermsListButton');
+getTermsListButton.onclick = () => getTermsList();
 
-dictionary.on('data', (data) => {
-    console.log('data', data);
-    dictionary.unsubscribe();
-})
-
-dictionary.on('error', (error) => {
-    console.log('error', error);
-})
+function example() {
+    let dictionary = new Query();
+    
+    dictionary.get('прозорливый');
+    
+    dictionary.on('data', (data) => {
+        console.log('data', data);
+        dictionary.unsubscribe();
+    });
+    
+    dictionary.on('error', (error) => {
+        console.log('error', error);
+    });
+}
