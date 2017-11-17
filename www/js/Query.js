@@ -23,7 +23,7 @@ class Query extends MyEventEmitter {
         ldf.Logger.setLevel('error');
     }
 
-    get(term) {
+    get(term, cb) {
         term = term.toLowerCase();
         let fragmentsClient = new ldf.FragmentsClient('http://ldf.kloud.one/redbook');
         let q = 
@@ -92,6 +92,7 @@ class Query extends MyEventEmitter {
     
             r.on('end', () => {
                 this.emit('data', results);
+                cb (results);
             });
         }
 
