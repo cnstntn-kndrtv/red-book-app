@@ -60,7 +60,7 @@ function getColor(str, alpha) {
         'rgba(165, 81, 148)',
         'rgba(206, 109, 189)',
         'rgba(222, 158, 214)',
-]
+    ]
     let limit = 3;
     let firstCharcode = 1072;
     str = str.toLowerCase();
@@ -84,6 +84,7 @@ function getColor(str, alpha) {
 function firstToUpperCase(str) {
     return str[0].toUpperCase() + str.slice(1);
 }
+
 let c = 0;
 class Stack {
     constructor (el, options, data) {
@@ -153,27 +154,33 @@ class Stack {
             */
         }
     }
+
     _createStack() {
         this.dbIndex = this.options.visible;
+        let self = this;
+        let counter = this.dbIndex;
         for (let i = this.current; i < this.dbIndex; i++) {
-            var self = this;
             let term = this.dataKeysArray[i];
             let dictionary = new Query();
-            dictionary.get(term, function(result){
-                // term = String.fromCharCode(i + 1072);
+            dictionary.get(term, (result) => {
                 self._createCard(term, result);
-                self.items = [].slice.call(self.el.children);
-                self.itemsTotal = self.items.length;
-                // if( this.options.infinite && this.options.visible >= this.itemsTotal || !this.options.infinite && this.options.visible > this.itemsTotal || this.options.visible <=0 ) {
-                //     this.options.visible = 1;
-                // }
-                // console.dir(this.items);
-                self._init();
+                dictionary = null;
+                counter--;
+                if (!counter) next();
             });
             
         }
-        
+
+        function next() {
+            self.items = [].slice.call(self.el.children);
+            self.itemsTotal = self.items.length;
+            // if( this.options.infinite && this.options.visible >= this.itemsTotal || !this.options.infinite && this.options.visible > this.itemsTotal || this.options.visible <=0 ) {
+            //     this.options.visible = 1;
+            // }
+            self._init();
+        }
     }
+
     _createCard(term, res) {
         // console.log(term, res);
         
@@ -266,18 +273,15 @@ class Stack {
         liContent.appendChild(word);
         liContent.appendChild(results);
         this.el.appendChild(li);
-        // console.dir(this.items);
-        
     }
 
     _init() {
-        // console.log("init");
         // set default styles
         // first, the stack
         this.el.style.WebkitPerspective = this.el.style.perspective = this.options.perspective + 'px';
         this.el.style.WebkitPerspectiveOrigin = this.el.style.perspectiveOrigin = this.options.perspectiveOrigin;
     
-        var self = this;
+        // let self = this;
     
         // the items
         let opacityStep = 0.5 / this.options.visible;
@@ -297,15 +301,11 @@ class Stack {
                 this.reject();
             });
             item.hammertime.on('swiperight', () => {
-                // if (i == ) {
-                //     console.log(item.childNodes[0].childNodes[0].innerText);
-                // }
                 this.accept();
             });
         }
-        // console.dir(this.items);
+        
         classie.add(this.items[this.current], 'stack__item--current');
-        // this._nextCreateItems();
     }
 
     reject(callback) {
@@ -323,65 +323,78 @@ class Stack {
 
    
     _next(action, callback) {
-        if( this.isAnimating || ( !this.options.infinite && this.hasEnded ) ) return;
-        this.isAnimating = true;
-    
-        // current item
-        // var currentItem = this.items[this.current];
-        var currentItem = this.items[0];
-        classie.remove(currentItem, 'stack__item--current');
-    
-        // add animation class
-        classie.add(currentItem, action === 'accept' ? 'stack__item--accept' : 'stack__item--reject');
-    
-        var self = this;
-        onEndAnimation(currentItem, function() {
-            // reset current item
-            currentItem.style.opacity = 0;
-            // currentItem.style.pointerEvents = 'none';
-            // currentItem.style.zIndex = -1;
-            // currentItem.style.WebkitTransform = currentItem.style.transform = 'translate3d(0px, 0px, -' + parseInt(self.options.visible * 50) + 'px)';
-    
-            // classie.remove(currentItem, action === 'accept' ? 'stack__item--accept' : 'stack__item--reject');
-            
-            // self.items[self.current].style.zIndex = self.options.visible + 1;
-            // console.log(self.items[0].childNodes[0].childNodes[0].innerText);
-            localStorage.viewed = ((self.items[0].childNodes[0].childNodes[0].innerText).toLowerCase()).trim();
-            self.items.shift();
-            self.el.removeChild(self.el.firstChild);
-            self.isAnimating = false;
-            
-            if( callback ) callback();
-            
-            if( !self.options.infinite && self.current === 0 ) {
-                self.hasEnded = true;
-                // callback
-                self.options.onEndStack(self);
-            }
-        });
-        
-        function animateStackItems(item, i) {
-            item.style.pointerEvents = 'auto';
-            // console.log(i, item.outerText.slice(0, 2))
-            item.style.opacity = 1 - (i * 0.5 / self.options.visible);
-            item.style.zIndex = parseInt(self.options.visible - i);
-            
-            dynamics.animate(item, {
-                translateZ : parseInt(-1 * 50 * i)
-            }, self.options.stackItemsAnimation);
-        };
-
-        ///////
+        //
         this.dbIndex = (this.dbIndex + 1 < this.dataKeysArray.length) ? this.dbIndex + 1 : 0;
         let term = this.dataKeysArray[this.dbIndex];
-        var self = this;
         let dictionary = new Query();
-        dictionary.get(term, function(result){
-            console.log(self.items)
+        dictionary.get(term, (result) => {
+            next(term, result);
+            dictionary = null;
+        });
+        
+        var self = this;
+        function next(term, result) {
+            if( self.isAnimating || ( !self.options.infinite && self.hasEnded ) ) return;
+            self.isAnimating = true;
+        
+            // current item
+            // var currentItem = this.items[this.current];
+            var currentItem = self.items[0];
+            classie.remove(currentItem, 'stack__item--current');
+        
+            // add animation class
+            classie.add(currentItem, action === 'accept' ? 'stack__item--accept' : 'stack__item--reject');
+        
+            
+            onEndAnimation(currentItem, function() {
+                // reset current item
+                currentItem.style.opacity = 0;
+                // currentItem.style.pointerEvents = 'none';
+                // currentItem.style.zIndex = -1;
+                // currentItem.style.WebkitTransform = currentItem.style.transform = 'translate3d(0px, 0px, -' + parseInt(self.options.visible * 50) + 'px)';
+        
+                // classie.remove(currentItem, action === 'accept' ? 'stack__item--accept' : 'stack__item--reject');
+                
+                // self.items[self.current].style.zIndex = self.options.visible + 1;
+                // console.log(self.items[0].childNodes[0].childNodes[0].innerText);
+                localStorage.viewed = ((self.items[0].childNodes[0].childNodes[0].innerText).toLowerCase()).trim();
+                self.items.shift();
+                self.el.removeChild(self.el.firstChild);
+                self.isAnimating = false;
+                
+                if( callback ) callback();
+                
+                if( !self.options.infinite && self.current === 0 ) {
+                    self.hasEnded = true;
+                    // callback
+                    self.options.onEndStack(self);
+                }
+            });
+
+            function animateStackItems(item, i) {
+                item.style.pointerEvents = 'auto';
+                // console.log(i, item.outerText.slice(0, 2))
+                item.style.opacity = 1 - (i * 0.5 / self.options.visible);
+                item.style.zIndex = parseInt(self.options.visible - i);
+                
+                dynamics.animate(item, {
+                    translateZ : parseInt(-1 * 50 * i)
+                }, self.options.stackItemsAnimation);
+            };
+
+            // let result = {
+            //     "http://sw.kloud.one/redbook#59c3d92f47affb9e3de53ec7" : {
+            //         "meanings" : {
+            //             "aaa" : []
+            //             },
+            //         "partOfSpeech" : "preposition",
+            //         "canonicalForm" : null 
+            //     }
+            // }
+
+        
             self._createCard(term, result);
-            console.log(self.items)
             self.items = [].slice.call(self.el.children);
-            console.log(self.items);
             let newItem = self.items[self.options.visible];
             newItem.style.WebkitTransform = newItem.style.transform = 'translate3d(0,0,-' + parseInt(self.options.visible * 50) + 'px)';
             newItem.hammertime = new Hammer(newItem);
@@ -391,6 +404,7 @@ class Stack {
             newItem.hammertime.on('swiperight', () => {
                 self.accept();
             });
+            // debugger;
             ///////
             self.items[0].style.zIndex = self.options.visible + 1;
             // set style for the other items
@@ -409,7 +423,6 @@ class Stack {
                 
                 // stack items animation
                 setTimeout(function(item, i) {
-                    console.log(item, i)
                     return function() {
                         var preAnimation;
         
@@ -444,8 +457,7 @@ class Stack {
             // update current
             // this.current = this.current < this.itemsTotal - 1 ? this.current + 1 : 0;
             classie.add(self.items[self.current], 'stack__item--current');
-        });
-        
+        }
     }
 
 }
