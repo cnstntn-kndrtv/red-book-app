@@ -1,4 +1,16 @@
-
+if (localStorage.db) {
+    db = JSON.parse(localStorage.db);
+}
+if (localStorage.viewed){
+    var tmp = [];
+    for (var i = 0; i < db.indexOf(localStorage.viewed); i++){
+        tmp.push(db[i]);
+    };
+    db = db.slice(db.indexOf(localStorage.viewed)+1);
+    for (var i = 0; i < tmp.length; i++){
+        db.push(tmp[i]);
+    }
+}
 var support = { animations : Modernizr.cssanimations },
     animEndEventNames = { 'WebkitAnimation' : 'webkitAnimationEnd', 'OAnimation' : 'oAnimationEnd', 'msAnimation' : 'MSAnimationEnd', 'animation' : 'animationend' },
     animEndEventName = animEndEventNames[ Modernizr.prefixed( 'animation' ) ],
@@ -48,7 +60,7 @@ function getColor(str, alpha) {
         'rgba(165, 81, 148)',
         'rgba(206, 109, 189)',
         'rgba(222, 158, 214)',
-  ]
+]
     let limit = 3;
     let firstCharcode = 1072;
     str = str.toLowerCase();
@@ -75,12 +87,17 @@ function firstToUpperCase(str) {
 let c = 0;
 class Stack {
     constructor (el, options, data) {
-        this.data = data;
-        this.dataKeysArray = Object.keys(data);
+        // this.data = data;
+        this.dataKeysArray = data;
+        // console.log(this.dataKeysArray);
+        // console.log(this.data);
+
         this._defaultOpts();
         this.el = el;
         this.current = 0;
+        
         this.options = extend( {}, this.options );
+        // this.counter = this.options.visible;
         extend( this.options, options );
         this._createStack();
     }
@@ -139,19 +156,27 @@ class Stack {
     _createStack() {
         this.dbIndex = this.options.visible;
         for (let i = this.current; i < this.dbIndex; i++) {
+            var self = this;
             let term = this.dataKeysArray[i];
-            // term = String.fromCharCode(i + 1072);
-            this._createCard(term, this.data[term]);
+            let dictionary = new Query();
+            dictionary.get(term, function(result){
+                // term = String.fromCharCode(i + 1072);
+                self._createCard(term, result);
+                self.items = [].slice.call(self.el.children);
+                self.itemsTotal = self.items.length;
+                // if( this.options.infinite && this.options.visible >= this.itemsTotal || !this.options.infinite && this.options.visible > this.itemsTotal || this.options.visible <=0 ) {
+                //     this.options.visible = 1;
+                // }
+                // console.dir(this.items);
+                self._init();
+            });
+            
         }
-        this.items = [].slice.call(this.el.children);
-        this.itemsTotal = this.items.length;
-        // if( this.options.infinite && this.options.visible >= this.itemsTotal || !this.options.infinite && this.options.visible > this.itemsTotal || this.options.visible <=0 ) {
-        //     this.options.visible = 1;
-        // }
-        this._init();
+        
     }
-
     _createCard(term, res) {
+        // console.log(term, res);
+        
         let li = document.createElement('li');
         li.setAttribute('class', 'stack__item-background');
         let liContent = document.createElement('div');
@@ -186,6 +211,7 @@ class Stack {
         for (var posVariant in res) {
             if (res.hasOwnProperty(posVariant)) {
                 var r = res[posVariant];
+                // console.log(r);
                 let div = document.createElement('div');
                 // morphology
                 // let morph = document.createElement('p');
@@ -240,9 +266,12 @@ class Stack {
         liContent.appendChild(word);
         liContent.appendChild(results);
         this.el.appendChild(li);
+        // console.dir(this.items);
+        
     }
 
     _init() {
+        // console.log("init");
         // set default styles
         // first, the stack
         this.el.style.WebkitPerspective = this.el.style.perspective = this.options.perspective + 'px';
@@ -265,14 +294,18 @@ class Stack {
             }
             item.hammertime = new Hammer(item);
             item.hammertime.on('swipeleft', () => {
-                this.reject()
+                this.reject();
             });
             item.hammertime.on('swiperight', () => {
+                // if (i == ) {
+                //     console.log(item.childNodes[0].childNodes[0].innerText);
+                // }
                 this.accept();
             });
         }
-    
+        // console.dir(this.items);
         classie.add(this.items[this.current], 'stack__item--current');
+        // this._nextCreateItems();
     }
 
     reject(callback) {
@@ -288,6 +321,7 @@ class Stack {
         this._init();
     }
 
+   
     _next(action, callback) {
         if( this.isAnimating || ( !this.options.infinite && this.hasEnded ) ) return;
         this.isAnimating = true;
@@ -311,11 +345,12 @@ class Stack {
             // classie.remove(currentItem, action === 'accept' ? 'stack__item--accept' : 'stack__item--reject');
             
             // self.items[self.current].style.zIndex = self.options.visible + 1;
-            
+            // console.log(self.items[0].childNodes[0].childNodes[0].innerText);
+            localStorage.viewed = ((self.items[0].childNodes[0].childNodes[0].innerText).toLowerCase()).trim();
             self.items.shift();
             self.el.removeChild(self.el.firstChild);
             self.isAnimating = false;
-    
+            
             if( callback ) callback();
             
             if( !self.options.infinite && self.current === 0 ) {
@@ -339,71 +374,78 @@ class Stack {
         ///////
         this.dbIndex = (this.dbIndex + 1 < this.dataKeysArray.length) ? this.dbIndex + 1 : 0;
         let term = this.dataKeysArray[this.dbIndex];
-        this._createCard(term, this.data[term]);
-        // let letter = String.fromCharCode(1072 + c++);
-        // self._createCard(letter + letter + letter);
-        self.items = [].slice.call(self.el.children);
-        let newItem = self.items[self.options.visible];
-        newItem.style.WebkitTransform = newItem.style.transform = 'translate3d(0,0,-' + parseInt(self.options.visible * 50) + 'px)';
-        newItem.hammertime = new Hammer(newItem);
-        newItem.hammertime.on('swipeleft', () => {
-            self.reject()
-        });
-        newItem.hammertime.on('swiperight', () => {
-            self.accept();
-        });
-        ///////
-        this.items[0].style.zIndex = this.options.visible + 1;
-        // set style for the other items
-        for(var i = 0; i < this.options.visible; ++i) {
-            // if( i > this.options.visible ) break;
-            let pos;
-            if( !this.options.infinite ) {
-                if( i >= this.options.visible - 1 ) break;
-                pos = i + 1;
-            }
-            else {
-                pos = this.current + i < this.itemsTotal - 1 ? this.current + i + 1 : i - (this.itemsTotal - this.current - 1);
-            }
-
-            var item = this.items[i + 1];
-            
-            // stack items animation
-            setTimeout(function(item, i) {
-                return function() {
-                    var preAnimation;
+        var self = this;
+        let dictionary = new Query();
+        dictionary.get(term, function(result){
+            console.log(self.items)
+            self._createCard(term, result);
+            console.log(self.items)
+            self.items = [].slice.call(self.el.children);
+            console.log(self.items);
+            let newItem = self.items[self.options.visible];
+            newItem.style.WebkitTransform = newItem.style.transform = 'translate3d(0,0,-' + parseInt(self.options.visible * 50) + 'px)';
+            newItem.hammertime = new Hammer(newItem);
+            newItem.hammertime.on('swipeleft', () => {
+                self.reject()
+            });
+            newItem.hammertime.on('swiperight', () => {
+                self.accept();
+            });
+            ///////
+            self.items[0].style.zIndex = self.options.visible + 1;
+            // set style for the other items
+            for(var i = 0; i < self.options.visible; ++i) {
+                // if( i > this.options.visible ) break;
+                let pos;
+                if( !self.options.infinite ) {
+                    if( i >= self.options.visible - 1 ) break;
+                    pos = i + 1;
+                }
+                else {
+                    pos = self.current + i < self.itemsTotal - 1 ? self.current + i + 1 : i - (self.itemsTotal - self.current - 1);
+                }
     
-                    if( self.options.stackItemsPreAnimation ) {
-                        preAnimation = action === 'accept' ? self.options.stackItemsPreAnimation.accept : self.options.stackItemsPreAnimation.reject;
-                    }
-                    
-                    if( preAnimation ) {
-                        // items "pre animation" properties
-                        var animProps = {};
-                        
-                        for (var key in preAnimation.animationProperties) {
-                            var interval = preAnimation.elastic ? preAnimation.animationProperties[key]/self.options.visible : 0;
-                            animProps[key] = preAnimation.animationProperties[key] - Number(i*interval);
+                var item = self.items[i + 1];
+                
+                // stack items animation
+                setTimeout(function(item, i) {
+                    console.log(item, i)
+                    return function() {
+                        var preAnimation;
+        
+                        if( self.options.stackItemsPreAnimation ) {
+                            preAnimation = action === 'accept' ? self.options.stackItemsPreAnimation.accept : self.options.stackItemsPreAnimation.reject;
                         }
-    
-                        // this one remains the same..
-                        animProps.translateZ = parseInt(-1 * 50 * (i+1));
-    
-                        preAnimation.animationSettings.complete = function() {
-                            animateStackItems(item, i);
-                        };
                         
-                        dynamics.animate(item, animProps, preAnimation.animationSettings);
-                    } else {
-                        animateStackItems(item, i);
-                    }
-                };
-            }(item,i), this.options.stackItemsAnimationDelay);
-        }
-    
-        // update current
-        // this.current = this.current < this.itemsTotal - 1 ? this.current + 1 : 0;
-        classie.add(this.items[this.current], 'stack__item--current');
+                        if( preAnimation ) {
+                            // items "pre animation" properties
+                            var animProps = {};
+                            
+                            for (var key in preAnimation.animationProperties) {
+                                var interval = preAnimation.elastic ? preAnimation.animationProperties[key]/self.options.visible : 0;
+                                animProps[key] = preAnimation.animationProperties[key] - Number(i*interval);
+                            }
+        
+                            // this one remains the same..
+                            animProps.translateZ = parseInt(-1 * 50 * (i+1));
+        
+                            preAnimation.animationSettings.complete = function() {
+                                animateStackItems(item, i);
+                            };
+                            
+                            dynamics.animate(item, animProps, preAnimation.animationSettings);
+                        } else {
+                            animateStackItems(item, i);
+                        }
+                    };
+                }(item,i), self.options.stackItemsAnimationDelay);
+            }
+        
+            // update current
+            // this.current = this.current < this.itemsTotal - 1 ? this.current + 1 : 0;
+            classie.add(self.items[self.current], 'stack__item--current');
+        });
+        
     }
 
 }
@@ -419,5 +461,3 @@ var closeInfoButton = document.querySelector('#close-info-button')
 closeInfoButton.onclick = () => {
     infoScreen.removeAttribute('class', 'open');
 }
-
-

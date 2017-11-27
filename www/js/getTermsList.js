@@ -1,5 +1,5 @@
-function getTermsList() {
-    console.log('getTermsList')
+function getTermsList(cb) {
+    // console.log('getTermsList')
     ldf.Logger.setLevel('error');
 
     let fragmentsClient = new ldf.FragmentsClient('http://ldf.kloud.one/redbook');
@@ -31,7 +31,7 @@ function getTermsList() {
     
     let r = new ldf.SparqlIterator(q, { fragmentsClient: fragmentsClient });
     let n = 0;
-    let results = new Set;
+    let results = [];
     
     function getLiteral(l) {
         let match = /^"([^]*)"/.exec(l);
@@ -39,12 +39,13 @@ function getTermsList() {
     }
     
     r.on('data', (data) => {
-        console.log(data)
-        results.add( getLiteral( data['?wr'] ).toLowerCase() );
+        // console.log(data)
+        results.push( getLiteral( data['?wr'] ).toLowerCase() );
     });
     
     r.on('end', () => {
-        console.log(results);
-        console.log(results.size);
+        // console.log(results);
+        cb(results);
+        // console.log(results.size);
     });
 }
