@@ -1,3 +1,5 @@
+//@ts-check
+
 if (localStorage.db) {
     db = JSON.parse(localStorage.db);
 }

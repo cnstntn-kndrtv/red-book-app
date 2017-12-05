@@ -1,3 +1,5 @@
+//@ts-check
+
 let exampleButton = document.querySelector('#exampleButton');
 exampleButton.onclick = () => example()
 

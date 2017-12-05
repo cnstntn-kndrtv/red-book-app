@@ -1,3 +1,5 @@
+//@ts-check
+
 var support = { animations : Modernizr.cssanimations },
 animEndEventNames = { 'WebkitAnimation' : 'webkitAnimationEnd', 'OAnimation' : 'oAnimationEnd', 'msAnimation' : 'MSAnimationEnd', 'animation' : 'animationend' },
 animEndEventName = animEndEventNames[ Modernizr.prefixed( 'animation' ) ],

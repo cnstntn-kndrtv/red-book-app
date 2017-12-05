@@ -1,3 +1,5 @@
+//@ts-check
+
 function getTermsList(cb) {
     // console.log('getTermsList')
     ldf.Logger.setLevel('error');
